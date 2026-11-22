@@ -1,8 +1,16 @@
-# errors
+# Server errors in the Django admin
+
+[![Test status](https://github.com/andreynovikov/django-server-errors/actions/workflows/test.yaml/badge.svg)](https://github.com/andreynovikov/django-server-errors/actions/workflows/test.yaml)
+[![GitHub release](https://img.shields.io/github/release/andreynovikov/django-server-errors.svg)](https://github.com/andreynovikov/django-server-errors/releases/latest)
+[![PyPI release](https://img.shields.io/pypi/v/django-server-errors.svg)](https://pypi.org/project/django-server-errors/)
+[![Python version](https://img.shields.io/pypi/pyversions/django-server-errors.svg)](https://pypi.org/project/django-server-errors/)
+[![Django version](https://img.shields.io/pypi/frameworkversions/django/django-server-errors.svg)](https://pypi.org/project/django-server-errors/)
+[![GitHub issues](https://img.shields.io/github/issues/andreynovikov/django-server-errors.svg)](https://github.com/andreynovikov/django-server-errors/issues)
+[![GitHub license](https://img.shields.io/github/license/andreynovikov/django-server-errors.svg)](LICENSE)
 
 Server errors of a Django site, grouped and triaged in the Django admin.
 
-`errors` collects every response with a 5xx status and every Celery task that fails. It groups repeats of the same error, so the admin shows one row per problem instead of one per occurrence. Each row has its occurrence count, frequency and a severity that administrators set. The app has no URLs or API of its own; it is visible only in the Django admin.
+The `errors` app collects every response with a 5xx status and every Celery task that fails. It groups repeats of the same error, so the admin shows one row per problem instead of one per occurrence. Each row has its occurrence count, frequency and a severity that administrators set. The app has no URLs or API of its own; it is visible only in the Django admin. It needs no external service: errors are stored in the site's own database.
 
 ## Features
 
@@ -27,14 +35,18 @@ Server errors of a Django site, grouped and triaged in the Django admin.
 ## Requirements
 
 - Python 3.11 or later.
-- Django 5.0 or later, tested with Django 6.1.
+- Django 5.2 or later; 5.2, 6.0 and 6.1 are tested.
 - Optional: Django REST framework and Celery.
 
-It works with any database that supports Django's `JSONField`, and is tested on PostgreSQL and SQLite.
+It works with any database that supports Django's `JSONField`, and is tested on SQLite and PostgreSQL.
 
 ## Installation
 
-1. Copy the `errors` directory into your project next to your other apps, or into any directory on the Python path.
+1. Install the package. It is named `django-server-errors`, and its app is `errors`.
+
+   ```shell
+   pip install django-server-errors
+   ```
 
 2. Add the app to `INSTALLED_APPS`. It needs the admin.
 
@@ -108,32 +120,55 @@ def login(request):
 
 Local variables may also contain personal data. Grant the view permission on errors only to those who may see it.
 
-## Tests
-
-In a project that has the app installed:
-
-```
-python manage.py test errors
-```
-
-Without a project, on SQLite, from the directory that contains `errors`:
-
-```
-python -m django test errors --settings=errors.tests.settings
-```
-
-Tests of the Django REST framework and Celery integration are skipped when those packages are not installed.
-
-## Translations
-
-The source strings are English, and `locale/` holds the English and Russian catalogs. To update them after changing strings, run this in the `errors` directory (it needs GNU gettext):
-
-```
-django-admin makemessages -l en -l ru
-django-admin compilemessages
-```
-
 ## Limitations
 
 - Errors are written synchronously by the process that failed. If the database is unavailable, an error is only logged.
 - It is a lightweight tracker for a site's own admin. It has no sampling, notifications or retention beyond the per-error trace limit. For high volumes, use a dedicated error tracker.
+
+## Development
+
+### Tests
+
+In a project that has the app installed:
+
+```shell
+python manage.py test errors
+```
+
+On all supported Python and Django versions, with [tox](https://tox.wiki/):
+
+```shell
+tox
+```
+
+Or once, without a project, on SQLite, in the repository's root:
+
+```shell
+python -m django test errors --settings=errors.tests.settings
+```
+
+Tests of the Django REST framework and Celery integration are skipped when those packages are not installed. tox runs each version both without and with them.
+
+### Translations
+
+The source strings are English, and `errors/locale/` holds the English and Russian catalogs. To update them after changing strings, run this in the `errors` directory (it needs GNU gettext):
+
+```shell
+django-admin makemessages -l en -l ru
+django-admin compilemessages
+```
+
+### Releases
+
+Set the new version in `pyproject.toml`, commit, then tag the commit and push the tag:
+
+```shell
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The `publish` workflow tests the tag, publishes it to TestPyPI and PyPI and creates a GitHub release with notes generated from the commits.
+
+## License
+
+[MIT](LICENSE)
