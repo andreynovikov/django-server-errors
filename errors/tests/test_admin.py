@@ -5,13 +5,15 @@ from django.utils import translation
 
 from errors.admin import ErrorAdmin
 from errors.models import Error
+from errors.tests.mixins import TestsAreProjectCode
 
 MASK = '********************'
 
 
 @override_settings(ROOT_URLCONF='errors.tests.urls')
-class AdminTests(TestCase):
+class AdminTests(TestsAreProjectCode, TestCase):
     def setUp(self):
+        super().setUp()
         Client(raise_request_exception=False).get('/boom/?password=hunter2')
         self.error = Error.objects.get()
         self.model_admin = ErrorAdmin(Error, AdminSite())

@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from errors.models import Error, ErrorTrace
 from errors.recorder import record
+from errors.tests.mixins import TestsAreProjectCode
 
 try:
     from celery import shared_task
@@ -29,8 +30,9 @@ def frame_vars(trace, function):
 
 
 @override_settings(ROOT_URLCONF='errors.tests.urls')
-class RequestErrorTests(TestCase):
+class RequestErrorTests(TestsAreProjectCode, TestCase):
     def setUp(self):
+        super().setUp()
         self.client = Client(raise_request_exception=False)
 
     def test_same_error_at_same_place_is_one_group(self):
@@ -137,7 +139,7 @@ class RequestErrorTests(TestCase):
 
 
 @skipIf(shared_task is None, 'Celery is not installed')
-class TaskErrorTests(TestCase):
+class TaskErrorTests(TestsAreProjectCode, TestCase):
     def test_failed_task(self):
         failing_task.apply(args=(5, 'hunter2'))
 
